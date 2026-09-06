@@ -10,6 +10,30 @@
         "CHANNEL_SECRET": {
             "description": "LINE bot Channel secret",
             "required":  true
+        },
+        "LINE_CHANNEL_ID": {
+            "description": "LINE channel ID (Basic settings page), used to verify LIFF idToken",
+            "required":  false
+        },
+        "LIFF_ID": {
+            "description": "LIFF app ID for the sales upload form (e.g. 1234567890-AbCdEfGh)",
+            "required":  false
+        },
+        "GOOGLE_SERVICE_ACCOUNT_JSON": {
+            "description": "Google service account credentials JSON (as a single-line string), used to write to Google Sheets",
+            "required":  false
+        },
+        "GOOGLE_SHEET_ID": {
+            "description": "ID of the Google Sheet (from its URL) that stores sales records",
+            "required":  false
+        },
+        "MANAGER_USER_IDS": {
+            "description": "Comma-separated LINE user IDs allowed to query/track records",
+            "required":  false
+        },
+        "SALES_USERS": {
+            "description": "JSON object mapping LINE user ID to sales person display name, e.g. {\"U123...\": \"王小明\"}",
+            "required":  false
         }
     }
 }
