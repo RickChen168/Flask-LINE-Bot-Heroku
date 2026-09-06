@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>業務資訊上傳</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: -apple-system, "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; padding: 16px; background: #f5f5f5; }
+    h1 { font-size: 18px; margin-bottom: 12px; }
+    label { display: block; margin-top: 12px; font-size: 14px; color: #333; }
+    input, select, textarea { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
+    button { width: 100%; margin-top: 20px; padding: 12px; background: #06c755; color: #fff; border: none; border-radius: 6px; font-size: 16px; }
+    button:disabled { background: #aaa; }
+    #status { margin-top: 12px; font-size: 14px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>業務資訊上傳</h1>
+  <form id="upload-form">
+    <label>客戶名稱
+      <input type="text" id="customer_name" required>
+    </label>
+    <label>聯絡方式
+      <input type="text" id="contact">
+    </label>
+    <label>商機金額
+      <input type="number" id="amount" min="0">
+    </label>
+    <label>狀態
+      <select id="status">
+        <option>洽談中</option>
+        <option>已成交</option>
+        <option>已流失</option>
+      </select>
+    </label>
+    <label>備註
+      <textarea id="note" rows="3"></textarea>
+    </label>
+    <button type="submit" id="submit-btn">送出</button>
+  </form>
+  <div id="status"></div>
+
+  <script>
+    const LIFF_ID = "{{ liff_id }}";
+    const statusEl = document.getElementById("status");
+    const submitBtn = document.getElementById("submit-btn");
+
+    async function init() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+      } catch (err) {
+        statusEl.textContent = "LIFF 初始化失敗：" + err;
+      }
+    }
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      statusEl.textContent = "送出中...";
+      try {
+        const idToken = liff.getIDToken();
+        const profile = await liff.getProfile();
+        const res = await fetch("/api/records", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id_token: idToken,
+            user_id: profile.userId,
+            display_name: profile.displayName,
+            customer_name: document.getElementById("customer_name").value,
+            contact: document.getElementById("contact").value,
+            amount: document.getElementById("amount").value,
+            status: document.getElementById("status").value,
+            note: document.getElementById("note").value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "上傳失敗");
+        }
+        statusEl.textContent = "上傳成功！可以關閉此視窗。";
+        setTimeout(() => liff.closeWindow(), 1200);
+      } catch (err) {
+        statusEl.textContent = "上傳失敗：" + err.message;
+        submitBtn.disabled = false;
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

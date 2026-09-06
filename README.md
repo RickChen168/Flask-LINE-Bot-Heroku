@@ -38,3 +38,44 @@
 <img src="https://github.com/hsuanchi/Flask-LINE-Bot-Heroku/blob/main/img/custom%20readme-flask-line-bot.png" width="800px" height="auto">
 
 本篇文章同步刊登於 [ [Flask – LINE Bot 教學] Heroku 一鍵自動部署 - Max行銷誌](https://www.maxlist.xyz/2020/11/30/flask-line-bot-deploy-heroku/)，如果有遇到任何問題，歡迎私訊或留言，我會盡快回覆您
+
+### 五. 業務資訊上傳與追蹤功能
+
+這個專案除了 Echo Bot，也內建了「業務上傳資訊、管理者用指令查詢追蹤」的功能，資料存放於 Google 試算表。
+
+#### 5.1 建立 Google 試算表 + 服務帳戶
+
+1. 開一個新的 Google 試算表，記下網址中的 ID（`https://docs.google.com/spreadsheets/d/<這一段就是ID>/edit`）。
+2. 到 [Google Cloud Console](https://console.cloud.google.com/) 建立專案，啟用 **Google Sheets API**。
+3. 建立一個「服務帳戶 (Service Account)」，下載 JSON 金鑰。
+4. 把試算表「共用」給 JSON 金鑰裡的 `client_email`（給編輯權限）。
+5. 把整份 JSON 金鑰內容（壓成一行）設定到 Heroku 環境變數 `GOOGLE_SERVICE_ACCOUNT_JSON`，試算表 ID 設定到 `GOOGLE_SHEET_ID`。
+
+程式第一次寫入時會自動在試算表建立「業務紀錄」分頁與標題列，不需要手動建立欄位。
+
+#### 5.2 建立 LIFF 上傳表單
+
+1. 到 [LINE Developers Console](https://developers.line.biz/console/)，在你的 Messaging API Channel 底下新增一個 **LIFF App**。
+2. Endpoint URL 填入 `https://你的heroku網址/liff/upload`，Scope 勾選 `profile`。
+3. 建立完成後複製 **LIFF ID**，設定到 Heroku 環境變數 `LIFF_ID`。
+4. （建議）把 Channel 的 **Channel ID**（在 Basic settings 頁面）設定到 `LINE_CHANNEL_ID`，程式會用它驗證上傳者身份，避免被冒用。
+
+#### 5.3 登記業務人員與管理者身份
+
+1. 讓業務先把官方帳號加為好友，並傳一則訊息給機器人；機器人會回覆他的 **LINE User ID**。
+2. 把每位業務的 User ID 整理成 JSON，設定到 `SALES_USERS`，例如：
+   ```json
+   {"U1234...": "王小明", "U5678...": "陳小華"}
+   ```
+3. 把你（管理者）自己的 LINE User ID 設定到 `MANAGER_USER_IDS`（多人用逗號分隔）。
+
+#### 5.4 使用方式
+
+- **業務**：傳任意訊息給機器人，會收到「開啟上傳表單」按鈕，點擊後填寫客戶名稱、聯絡方式、商機金額、狀態、備註並送出；管理者會即時收到推播通知。
+- **管理者**：直接傳文字指令給機器人查詢：
+  - `說明`：列出所有指令
+  - `最新`：查看最新 5 筆紀錄
+  - `本週`：本週紀錄數與商機金額加總
+  - `查詢 關鍵字`：依客戶名稱或業務姓名搜尋
+
+若尚未設定 `GOOGLE_SERVICE_ACCOUNT_JSON` / `GOOGLE_SHEET_ID` / `LIFF_ID`，機器人仍可運作，但上傳與查詢功能會回覆尚未設定完成的提示。
