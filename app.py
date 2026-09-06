@@ -13,6 +13,7 @@ from linebot.models import (
     URIAction,
 )
 
+import notify
 import roles
 import sheets
 from line_liff import verify_id_token
@@ -79,17 +80,28 @@ def api_create_record():
         note=(data.get("note") or "").strip(),
     )
 
-    _notify_managers(f"📥 新業務紀錄\n業務：{sales_name}\n客戶：{customer_name}\n狀態：{status}")
+    _notify_managers_by_email(
+        subject=f"【新業務紀錄】{customer_name}",
+        body=(
+            f"業務：{sales_name}\n"
+            f"客戶：{customer_name}\n"
+            f"聯絡方式：{data.get('contact', '')}\n"
+            f"商機金額：{data.get('amount', '')}\n"
+            f"狀態：{status}\n"
+            f"備註：{data.get('note', '')}"
+        ),
+    )
 
     return jsonify({"ok": True})
 
 
-def _notify_managers(text):
-    for manager_id in roles.manager_ids():
-        try:
-            line_bot_api.push_message(manager_id, TextSendMessage(text=text))
-        except Exception:
-            pass
+def _notify_managers_by_email(subject, body):
+    if not notify.is_configured():
+        return
+    try:
+        notify.send_manager_email(subject, body)
+    except Exception:
+        pass
 
 
 @handler.add(MessageEvent, message=TextMessage)

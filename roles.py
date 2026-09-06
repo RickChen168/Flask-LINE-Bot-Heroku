@@ -11,10 +11,6 @@ def _manager_ids():
     return {uid.strip() for uid in raw.split(",") if uid.strip()}
 
 
-def manager_ids():
-    return _manager_ids()
-
-
 def is_manager(user_id):
     return user_id in _manager_ids()
 
