@@ -34,6 +34,30 @@
         "SALES_USERS": {
             "description": "JSON object mapping LINE user ID to sales person display name, e.g. {\"U123...\": \"王小明\"}",
             "required":  false
+        },
+        "SMTP_HOST": {
+            "description": "SMTP server host used to email the manager when a new sales record is submitted",
+            "required":  false
+        },
+        "SMTP_PORT": {
+            "description": "SMTP server port (defaults to 587)",
+            "required":  false
+        },
+        "SMTP_USERNAME": {
+            "description": "SMTP login username",
+            "required":  false
+        },
+        "SMTP_PASSWORD": {
+            "description": "SMTP login password",
+            "required":  false
+        },
+        "FROM_EMAIL": {
+            "description": "Sender email address for notifications (defaults to SMTP_USERNAME)",
+            "required":  false
+        },
+        "MANAGER_EMAIL": {
+            "description": "Comma-separated email addresses to notify when a new sales record is submitted",
+            "required":  false
         }
     }
 }
